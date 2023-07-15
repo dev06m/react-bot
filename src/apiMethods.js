@@ -32,10 +32,10 @@ return response.data.data;
 
 export const FirstPriceSet = async (item, baslangic_fiyati, minimum_fiyat, bir_saat_bekle) => {
     //const item = [{id:'31084109034', price: 40, project: 'csgo', currency: 'USD'}]
-
+    debugger
     const response = await axios.post('https://api.shadowpay.com/api/v2/user/offers?token=' + token, 
     {
-        offers: item
+        offers: [item]
     });
 
     return response;
@@ -88,8 +88,8 @@ export const GetInventoryItems = async () => {
 }
 
 export const fetchItemById = async (asset_id) => {
-    const response = await GetInventoryItems();;
-
+    const response = await GetInventoryItems();
+    
     return response.find(item => item.asset_id === asset_id);
 }
   

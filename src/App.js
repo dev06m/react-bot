@@ -32,23 +32,12 @@ function App() {
   const handleSubmit = async (term) => {
     // const items = await fetchSellingItems();
     // const allItems = await fetchItems();
-    var result = await fetchItemById('30814953492');
+    var result = await fetchItemById('31520880069');
     
 
     console.log(result);
   };
 
-  function sleep(milliseconds) {  
-    return new Promise(resolve => setTimeout(resolve, milliseconds));  
- }  
-  
-  const sleepy =  () => {
-    console.log(1);
-
-    sleep(3000)
-
-    console.log(2)
-  }
   
   return (
     <div>

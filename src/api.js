@@ -11,9 +11,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 
 export const hile = async (item, thread) => {
-            debugger;
             var selectedItem = item;
-            item = await fetchItemById('30814953492');
+            item = await fetchItemById('31520880069');
             if (item != null)
                 item = {...item, intervalTime: 2000, baslangicFiyati: 40, minimumFiyat: 20, bir_saat_bekle: true};
 
@@ -35,11 +34,11 @@ export const hile = async (item, thread) => {
                 var getIdCount = 0;
                 var result = null;
 
-                result = GetItemsOnOffers;
+                result = await GetItemsOnOffers();
                 // item satista mi?
                 var myItem = result.data != null ? result.data.find(x => x.asset_id === item.asset_id) : null;
                 var itemPrice = 0;
-
+                debugger
                 if (myItem == null)
                 { // ILK BASTA FIYAT SETLEME 
                     var ilk_setleme_sonuc = FirstPriceSet(item, item.baslangicFiyati, item.minimumFiyat, item.asset_id);
