@@ -31,21 +31,34 @@ return response.data.data;
 
 
 export const FirstPriceSet = async (item, baslangic_fiyati, minimum_fiyat, bir_saat_bekle) => {
-    //const item = [{id:'31084109034', price: 40, project: 'csgo', currency: 'USD'}]
-    debugger
+    
+    if (item == null)
+    {
+        console.log("İtem null geliyor\n");
+        return "E";
+    }
+    const offer_item = {id: item.asset_id.toString(), price: baslangic_fiyati, project: 'csgo', currency: 'USD'}
+    
     const response = await axios.post('https://api.shadowpay.com/api/v2/user/offers?token=' + token, 
     {
-        offers: [item]
+        offers: [offer_item]
     });
 
     return response;
 }  
 
-export const ItemFiyatGetir = async (itemName) =>
+export const min_fiyat_getir = async (itemName) =>
 {
-    const response = await axios.get('https://api.shadowpay.com/api/v2/user/items/prices?token=' + token);
+    console.log(itemName)
+    const response = await axios.get('https://api.shadowpay.com/api/v2/user/items/prices?token=' + token, {
+        params: {
+            search: itemName
+        }
+    });
 
-    return response.data.data;
+    console.log(response.data[0].price)
+
+    return response.data.data[0].price;
 
 }
 
@@ -64,10 +77,11 @@ export const MakeOffer = async (itemm, price, miliseconds) => { // update yapark
 
 export const SatistakiItemFiyatiGetir = async (itemName) =>
   {
+    debugger
       var satistakiItemler = await GetItemsOnOffers();
       var itemObject = null;
 
-      itemObject =  satistakiItemler.find(item => item.steam_item.steam_market_hash_name === 'StatTrak™ AK-47 | Rat Rod (Field-Tested)');
+      itemObject =  satistakiItemler.find(item => item.steam_item.steam_market_hash_name === itemName);
   
   
       return itemObject.price;  

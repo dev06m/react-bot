@@ -8,7 +8,7 @@ import {
   fetchItems, 
   getItemsOnOffers, 
   FirstPriceSet, 
-  ItemFiyatGetir, 
+  min_fiyat_getir, 
   MakeOffer, 
   SatistakiItemFiyatiGetir, 
   GetItemsOnOffers, 
@@ -17,8 +17,13 @@ import {
 } from './apiMethods'; 
 
 import {
-  hile 
+  hile,
+  FiyatDegisikligiCheck
 } from './api';
+
+import {
+  asset_id
+} from './consts/Isimlendirmeler.js'
 
 import Table from 'react-bootstrap/Table';
 
@@ -28,14 +33,17 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function App() {
   const [images, setImages] = useState([]);
   const [items, setItems] = useState([]);
-
+ 
   const handleSubmit = async (term) => {
     // const items = await fetchSellingItems();
     // const allItems = await fetchItems();
-    var result = await fetchItemById('31520880069');
     
+    var items = await GetItemsOnOffers();
+    var item = items.find(x => x.asset_id === asset_id)
+    
+    console.log(await FiyatDegisikligiCheck(item));
 
-    console.log(result);
+    //console.log(result);
   };
 
   
@@ -61,7 +69,7 @@ function App() {
         </tr>
             </tbody>
         </Table>
-        <div onClick={hile}>Click</div>
+        <div onClick={handleSubmit}>Click</div>
     </div>
   );
 }
