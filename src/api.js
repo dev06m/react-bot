@@ -138,17 +138,17 @@ export const FiyatDegisikligiCheck = async (item) =>
     var sabitlenecek_zaman = 2000// Isimlendirmeler.SABITLENECEK_ZAMAN;
     debugger
     console.log('sabitlenecek zaman')
-    var shadowEnDusukFiyat = await min_fiyat_getir(item.steam_market_hash_name);
+    var shadowEnDusukFiyat = await min_fiyat_getir(item.steam_item.steam_market_hash_name);
     //var shadowEnDusukFiyat = 10;
     debugger
-    var itemFiyati = await SatistakiItemFiyatiGetir(item.steam_market_hash_name); // todouble // burdayimm
+    var itemFiyati = await SatistakiItemFiyatiGetir(item.steam_item.steam_market_hash_name); // todouble // burdayimm
     if (itemFiyati == null || itemFiyati == 0)
     {
         console.log('İtem fiyatı null ya da 0')
         dongu = false;
     }
 
-    shadowEnDusukFiyat = shadowEnDusukFiyat != null ? shadowEnDusukFiyat : item.steam_item.suggested_price;
+    shadowEnDusukFiyat = shadowEnDusukFiyat != null ? parseFloat(shadowEnDusukFiyat) : item.steam_item.suggested_price;
     if (shadowEnDusukFiyat < itemFiyati)
     {
         console.log(`DÜŞÜK FİYATLI item tespit edildi, fiyat güncleleniyor. (${item.steam_item.steam_market_hash_name})\n`);

@@ -49,16 +49,17 @@ export const FirstPriceSet = async (item, baslangic_fiyati, minimum_fiyat, bir_s
 
 export const min_fiyat_getir = async (itemName) =>
 {
-    console.log(itemName)
-    const response = await axios.get('https://api.shadowpay.com/api/v2/user/items/prices?token=' + token, {
-        params: {
-            search: itemName
-        }
-    });
+    try {
+        const response = await axios.get('https://api.shadowpay.com/api/v2/user/items/prices?token=' + token, {
+            params: {
+                search: itemName
+            }
+        });
+        return response.data.data.find(item => item.steam_market_hash_name == itemName).price;
+    }catch (error){
+        console.log(error)
+    }
 
-    console.log(response.data[0].price)
-
-    return response.data.data[0].price;
 
 }
 
@@ -68,7 +69,7 @@ export const MakeOffer = async (itemm, price, miliseconds) => { // update yapark
         
     const response = await axios.post('https://api.shadowpay.com/api/v2/user/offers?token=' + token, 
     {
-        offers: item
+        offers: item 
     });
 
     return response;
@@ -77,7 +78,7 @@ export const MakeOffer = async (itemm, price, miliseconds) => { // update yapark
 
 export const SatistakiItemFiyatiGetir = async (itemName) =>
   {
-    debugger
+    //debugger
       var satistakiItemler = await GetItemsOnOffers();
       var itemObject = null;
 
@@ -96,9 +97,32 @@ export const GetItemsOnOffers = async () =>
   
 
 export const GetInventoryItems = async () => {
-    const response = await axios.get('https://api.shadowpay.com/api/v2/user/inventory?token=' + token);
+    const inventory_response = await axios.get('https://api.shadowpay.com/api/v2/user/inventory?token=' + token);
+    const offers_response = await axios.get('https://api.shadowpay.com/api/v2/user/offers?token=' + token);
+    const item_names = [];
+    const inventory_array = [];
+    const offers_array = [];
+    let final_array = [];
     
-    return response.data.data;
+    inventory_response.data.data.map(async(item) => {
+        //debugger
+        if (!item_names.includes(item.steam_market_hash_name) && item.tradable == true) {
+            // const min_fiyat = await min_fiyat_getir(item.steam_market_hash_name)
+            // item = {...item, min_fiyat: min_fiyat}
+            inventory_array.push({...item, count: 1})
+            item_names.push(item.steam_market_hash_name)
+        }else {
+            inventory_array.map(x => x.steam_market_hash_name === item.steam_market_hash_name ? x.count++ : x.count)
+        }
+    });
+    offers_response.data.data.map(item => {
+        offers_array.push(item);
+    })
+    //final_array = {first: inventory_array, second: offers_array}
+    final_array.push(inventory_array);
+    final_array.push(offers_array);
+    console.log(final_array)
+    return final_array;
 }
 
 export const fetchItemById = async (asset_id) => {
