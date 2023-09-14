@@ -134,14 +134,13 @@ export const hile = async (item, thread) => {
 
 export const FiyatDegisikligiCheck = async (item) =>
 {
+    debugger
     var dongu = true;
     var sabitlenecek_zaman = 2000// Isimlendirmeler.SABITLENECEK_ZAMAN;
-    debugger
     console.log('sabitlenecek zaman')
-    var shadowEnDusukFiyat = await min_fiyat_getir(item.steam_item.steam_market_hash_name);
+    var shadowEnDusukFiyat = await min_fiyat_getir(item.steam_market_hash_name);
     //var shadowEnDusukFiyat = 10;
-    debugger
-    var itemFiyati = await SatistakiItemFiyatiGetir(item.steam_item.steam_market_hash_name); // todouble // burdayimm
+    var itemFiyati = await SatistakiItemFiyatiGetir(item.steam_market_hash_name); // todouble // burdayimm
     if (itemFiyati == null || itemFiyati == 0)
     {
         console.log('İtem fiyatı null ya da 0')

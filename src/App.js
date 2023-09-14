@@ -44,59 +44,91 @@ const useStyles = makeStyles((theme) => ({
 function App() {
   //const [images, setImages] = useState([]);
   const [items, setItems] = useState([]);
-  const [baslangic_fiyat, setBaslangicFiyat] = useState(0);
-  const [min_fiyat, setMinFiyat] = useState(0);
-  const [kontrol_araligi, setAralik] = useState(0);
   const [x, setX] = useState([]);
   const [sayi, setSayi] = useState(0);
   const classes = useStyles();
-  const [rowData, setRowData] = useState([
-    { id: 1, value: '' },
-    { id: 2, value: '' },
-    { id: 3, value: '' },
-    // İhtiyaca göre daha fazla satır ekleyebilirsiniz
+  const [data, setData] = useState([
+    // { id: 1, baslangic_fiyati: '1', min_fiyat: '', kontrol_araligi: 0}
   ]);
 
 
   const fetchInventory = async () => {
-    //debugger
     var all_items = await GetInventoryItems();
-    debugger
     for (let index = 0; index < all_items[0].length; index++) {
-      const min_fiyat = await min_fiyat_getir(all_items[0][index].steam_market_hash_name);
-      all_items[0][index] = {...all_items[0][index], min_fiyat: min_fiyat}
+      const minimum_fiyat = await min_fiyat_getir(all_items[0][index].steam_market_hash_name);
+      console.log(minimum_fiyat)
+      console.log(all_items)
+      all_items[0][index] = {...all_items[0][index], minimum_fiyat: minimum_fiyat ? minimum_fiyat : '-'}
+      console.log(all_items)
     }
     setItems(all_items[0]);
     setX(all_items[1])
   }
   
   const get_min_price = async (steam_name) => {
-    //debugger
     const data = await min_fiyat_getir("M4A4 | The Emperor (Battle-Scarred)");
     setSayi(sayi+1)
   }
  
   const handleSubmit = async (item) => {
-    debugger
-    console.log(item)
-    console.log(baslangic_fiyat, min_fiyat, kontrol_araligi)
+    //debugger
+    let dongu = true;
+    const item_data = data.find(x => x.id === item.id);
+    if (item_data) {
+      item.baslangic_fiyati = item_data.baslangic_fiyati; 
+      item.min_fiyat = item_data.min_fiyat;
+      item.kontrol_araligi = item_data.kontrol_araligi;  
+    }
+  
+    let result;
+      await setInterval(() => {
+        result = !FiyatDegisikligiCheck(item);
+        if (result)
+        console.log(result)
+
+      }, 2000)
+    // }
+    if (result)
+      console.log(result)
+    // setInterval(() => {
+    //     hile(item);
+    // }, item.kontrol_araligi)
   }
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault(); // Formun otomatik olarak gönderilmesini engelleyin
-  //   console.log('Gönderilen Değer:', inputValue);
-  //   // İşlemleri burada yapabilirsiniz
-  // };
 
-  const handleInputChange = (e, index) => {
-    // rowData dizisini kopyalayın
-    const newRowData = [...rowData];
-    // Değişen input'un değerini yeni diziye atayın
-    const index = newRowData.findIndex((row) => row.id === index);
-    if (index !== -1) {
-      newRowData[index].value = e.target.value;
-      // State'i güncelleyin
-      setRowData(newRowData);
+  const handleBaslangicFiyatChange = (e, id) => {
+    const { value } = e.target;
+    if (!data.find(i => i.id === id))
+      data.push({id: id, baslangic_fiyati: value})
+    else {
+      data.map((i, index) => {
+          if(i.id === id) 
+            data[index].baslangic_fiyati = value
+    })
+    }
+  };
+
+    const handleMinFiyatChange = (e, id) => {
+    const { value } = e.target;
+    if (!data.find(i => i.id === id))
+      data.push({id: id, min_fiyat: value})
+    else {
+      data.map((i, index) => {
+          if(i.id === id) 
+            data[index].min_fiyat = value
+    })
+    }
+  };
+
+    const handleKontrolAraligiChange = (e, id) => {
+    const { value } = e.target;
+    if (!data.find(i => i.id === id))
+      data.push({id: id, kontrol_araligi: value})
+    else {
+      data.map((i, index) => {
+          if(i.id === id) 
+            data[index].kontrol_araligi = value
+    })
     }
   };
 
@@ -125,7 +157,8 @@ function App() {
           </tr>
         </thead>
         <tbody>
-          {items.map((item, index) => { console.log(item)
+          {items.map((item, index) => { 
+            item = {...item, baslangic_fiyati: null, min_fiyat: null, kontrol_araligi: null}
             return (
               <tr key={item.id}>
                 <td>{index+1}</td>
@@ -133,10 +166,10 @@ function App() {
                 <td>x{item.count}</td>
                 <td>{item.asset_id}</td>
                 <td>{item.suggested_price}</td>
-                <td>{item.min_fiyat}</td>
-                <td><input type="number" name="name" step="any" value={baslangic_fiyat} onChange={(e) => handleInputChange(e, index)}/></td>
-                <td><input type="number" name="name"  value={min_fiyat} onChange={(e, i) => setMinFiyat(e.target.value)}/></td>
-                <td><input type="text" name="name"  value={kontrol_araligi} onChange={(e) => setAralik(e.target.value)}/></td>
+                <td>{item.minimum_fiyat}</td>
+                <td><input type="number" name="name" value={item.baslangic_fiyati} onChange={(e) => handleBaslangicFiyatChange(e, item.id)}/></td>
+                <td><input type="number" name="name"  value={item.min_fiyat} onChange={(e) => handleMinFiyatChange(e, item.id)}/></td>
+                <td><input type="number" name="name"  value={item.kontrol_araligi} onChange={(e) => handleKontrolAraligiChange(e, item.id)}/></td>
                 <td>{item.id}</td>
                 <td><button onClick={() => handleSubmit(item)}>Başlat</button></td>
              </tr>

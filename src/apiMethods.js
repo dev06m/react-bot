@@ -57,7 +57,7 @@ export const min_fiyat_getir = async (itemName) =>
         });
         return response.data.data.find(item => item.steam_market_hash_name == itemName).price;
     }catch (error){
-        console.log(error)
+        console.log(error);
     }
 
 
