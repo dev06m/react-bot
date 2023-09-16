@@ -78,14 +78,14 @@ export const MakeOffer = async (itemm, price, miliseconds) => { // update yapark
 
 export const SatistakiItemFiyatiGetir = async (itemName) =>
   {
-    //debugger
-      var satistakiItemler = await GetItemsOnOffers();
-      var itemObject = null;
-
-      itemObject =  satistakiItemler.find(item => item.steam_item.steam_market_hash_name === itemName);
-  
-  
-      return itemObject.price;  
+    var satistakiItemler = await GetItemsOnOffers();
+    var itemObject = null;
+    if(satistakiItemler.length > 0)
+        itemObject =  satistakiItemler.find(item => item.steam_item.steam_market_hash_name === itemName);
+    if(itemObject !== null && itemObject !== undefined)
+        return itemObject.price;  
+    else
+        return null;
 }
   
 export const GetItemsOnOffers = async () =>
@@ -93,6 +93,12 @@ export const GetItemsOnOffers = async () =>
     const response = await axios.get('https://api.shadowpay.com/api/v2/user/offers?token=' + token);
     
     return response.data.data;
+}
+
+export const GetAllInventoryItems = async () => {
+    const inventory_response = await axios.get('https://api.shadowpay.com/api/v2/user/inventory?token=' + token);
+
+    return inventory_response.data.data;
 }
   
 
@@ -126,7 +132,8 @@ export const GetInventoryItems = async () => {
 }
 
 export const fetchItemById = async (asset_id) => {
-    const response = await GetInventoryItems();
+    debugger
+    const response = await GetItemsOnOffers(asset_id);
     
     return response.find(item => item.asset_id === asset_id);
 }

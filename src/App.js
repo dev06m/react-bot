@@ -56,10 +56,13 @@ function App() {
     var all_items = await GetInventoryItems();
     for (let index = 0; index < all_items[0].length; index++) {
       const minimum_fiyat = await min_fiyat_getir(all_items[0][index].steam_market_hash_name);
-      console.log(minimum_fiyat)
-      console.log(all_items)
       all_items[0][index] = {...all_items[0][index], minimum_fiyat: minimum_fiyat ? minimum_fiyat : '-'}
-      console.log(all_items)
+    }
+    for (let index = 0; index < all_items[1].length; index++) {
+
+      console.log(all_items[1][index])
+      const minimum_fiyat = await min_fiyat_getir(all_items[1][index].steam_item.steam_market_hash_name);
+      all_items[1][index] = {...all_items[1][index], minimum_fiyat: minimum_fiyat ? minimum_fiyat : '-'}
     }
     setItems(all_items[0]);
     setX(all_items[1])
@@ -81,10 +84,11 @@ function App() {
     }
   
     let result;
-      await setInterval(() => {
-        result = !FiyatDegisikligiCheck(item);
-        if (result)
-        console.log(result)
+      setInterval(async () => { // 100 kez kontrol edildi 1 dk bekleme buraya yapilabilir
+        result = await FiyatDegisikligiCheck(item);
+        
+        if(result)
+          await hile(item)
 
       }, 2000)
     // }
@@ -190,7 +194,7 @@ function App() {
             <th>#</th>
             <th>İsim</th>
             <th>-</th>
-            <th>Id</th>
+            <th>Asset Id</th>
             <th>Tavsiye F.</th>
             <th>Site F. - Kendi F.</th>
             <th>Başlangıç Fiyatı</th>
@@ -202,20 +206,22 @@ function App() {
         </thead>
         <tbody>
           {x.map((item, index) => {
+            console.log(item)
+            item = {...item, baslangic_fiyati: null, min_fiyat: null, kontrol_araligi: null}
             return (
-              <tr key={index}>
+              <tr key={item.id}>
                 <td>{index+1}</td>
                 <td>{item.steam_item.steam_market_hash_name}</td>
-                <td>1</td>
-                <td>{item.id}</td>
+                <td>x{item.count}</td>
+                <td>{item.asset_id}</td>
                 <td>{item.steam_item.suggested_price}</td>
-                <td></td>
-                <td><input type="number" name="name" step="any"/></td>
-                <td><input type="number" name="name"/></td>
-                <td><input type="text" name="name"/></td>
+                <td>{item.minimum_fiyat}</td>
+                <td><input type="number" name="name" value={item.baslangic_fiyati} onChange={(e) => handleBaslangicFiyatChange(e, item.id)}/></td>
+                <td><input type="number" name="name"  value={item.min_fiyat} onChange={(e) => handleMinFiyatChange(e, item.id)}/></td>
+                <td><input type="number" name="name"  value={item.kontrol_araligi} onChange={(e) => handleKontrolAraligiChange(e, item.id)}/></td>
                 <td>{item.id}</td>
-                <td><button onClick={handleSubmit}>Başlat</button></td>
-             </tr>
+                <td><button onClick={() => handleSubmit(item)}>Başlat</button></td>
+              </tr>
             )
           })}
         </tbody>
