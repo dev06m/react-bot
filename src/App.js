@@ -9,7 +9,8 @@ import {
   fetchSellingItems, 
   fetchItems, 
   getItemsOnOffers, 
-  FirstPriceSet, 
+  FirstPriceSet,
+  min_fiyat_getir_envanter, 
   min_fiyat_getir, 
   MakeOffer, 
   SatistakiItemFiyatiGetir, 
@@ -47,48 +48,52 @@ function App() {
   const [x, setX] = useState([]);
   const [sayi, setSayi] = useState(0);
   const classes = useStyles();
-  const [data, setData] = useState([
-    // { id: 1, baslangic_fiyati: '1', min_fiyat: '', kontrol_araligi: 0}
-  ]);
+  const [data, setData] = useState([]);
 
 
   const fetchInventory = async () => {
-    var all_items = await GetInventoryItems();
+    var all_items =  await GetInventoryItems();
+    var item_prices = await min_fiyat_getir_envanter();
+    console.log(item_prices)
     for (let index = 0; index < all_items[0].length; index++) {
-      const minimum_fiyat = await min_fiyat_getir(all_items[0][index].steam_market_hash_name);
-      all_items[0][index] = {...all_items[0][index], minimum_fiyat: minimum_fiyat ? minimum_fiyat : '-'}
+      //const min_fiyat = await min_fiyat_getir(all_items[0][index].steam_market_hash_name);
+      const min_fiyat = item_prices.find(item => item.steam_market_hash_name === all_items[0][index].steam_market_hash_name).price;
+      all_items[0][index] = {...all_items[0][index], min_fiyat: min_fiyat ? min_fiyat : '-'}
     }
     for (let index = 0; index < all_items[1].length; index++) {
-
-      console.log(all_items[1][index])
-      const minimum_fiyat = await min_fiyat_getir(all_items[1][index].steam_item.steam_market_hash_name);
-      all_items[1][index] = {...all_items[1][index], minimum_fiyat: minimum_fiyat ? minimum_fiyat : '-'}
+      //const min_fiyat =  min_fiyat_getir(all_items[1][index].steam_item.steam_market_hash_name);
+      const min_fiyat = item_prices.find(item => item.steam_market_hash_name === all_items[1][index].steam_item.steam_market_hash_name).price;
+      all_items[1][index] = {...all_items[1][index], min_fiyat: min_fiyat ? min_fiyat : '-'}
     }
     setItems(all_items[0]);
     setX(all_items[1])
   }
   
-  const get_min_price = async (steam_name) => {
-    const data = await min_fiyat_getir("M4A4 | The Emperor (Battle-Scarred)");
-    setSayi(sayi+1)
+  const deneme =  () => {
+    let price = 0
+    price =  min_fiyat_getir_envanter("M4A4 | The Emperor (Battle-Scarred)");
+    console.log('price: ', price)
   }
  
   const handleSubmit = async (item) => {
-    //debugger
     let dongu = true;
     const item_data = data.find(x => x.id === item.id);
     if (item_data) {
       item.baslangic_fiyati = item_data.baslangic_fiyati; 
-      item.min_fiyat = item_data.min_fiyat;
+      item.minimum_fiyat = item_data.minimum_fiyat;
       item.kontrol_araligi = item_data.kontrol_araligi;  
     }
   
     let result;
       setInterval(async () => { // 100 kez kontrol edildi 1 dk bekleme buraya yapilabilir
+        debugger
+        console.log(`${item.steam_market_hash_name} için task başlıyor.`)
         result = await FiyatDegisikligiCheck(item);
         
-        if(result)
+        if(result) {
+          debugger
           await hile(item)
+        }
 
       }, 2000)
     // }
@@ -115,11 +120,11 @@ function App() {
     const handleMinFiyatChange = (e, id) => {
     const { value } = e.target;
     if (!data.find(i => i.id === id))
-      data.push({id: id, min_fiyat: value})
+      data.push({id: id, minimum_fiyat: value})
     else {
       data.map((i, index) => {
           if(i.id === id) 
-            data[index].min_fiyat = value
+            data[index].minimum_fiyat = value
     })
     }
   };
@@ -141,7 +146,7 @@ function App() {
        <Button variant="primary" size="lg" class="me-2" onClick={fetchInventory}>
         Envanteri aç
       </Button>
-      <Button variant="secondary" size="lg" class="me-2" onClick={get_min_price}>
+      <Button variant="secondary" size="lg" class="me-2" onClick={deneme}>
         Block level button
       </Button>
       <Table striped bordered hover>
@@ -162,7 +167,7 @@ function App() {
         </thead>
         <tbody>
           {items.map((item, index) => { 
-            item = {...item, baslangic_fiyati: null, min_fiyat: null, kontrol_araligi: null}
+            //item = {...item, baslangic_fiyati: null, minimum_fiyat: null, kontrol_araligi: null}
             return (
               <tr key={item.id}>
                 <td>{index+1}</td>
@@ -170,9 +175,9 @@ function App() {
                 <td>x{item.count}</td>
                 <td>{item.asset_id}</td>
                 <td>{item.suggested_price}</td>
-                <td>{item.minimum_fiyat}</td>
+                <td>{item.min_fiyat}</td>
                 <td><input type="number" name="name" value={item.baslangic_fiyati} onChange={(e) => handleBaslangicFiyatChange(e, item.id)}/></td>
-                <td><input type="number" name="name"  value={item.min_fiyat} onChange={(e) => handleMinFiyatChange(e, item.id)}/></td>
+                <td><input type="number" name="name"  value={item.minimum_fiyat} onChange={(e) => handleMinFiyatChange(e, item.id)}/></td>
                 <td><input type="number" name="name"  value={item.kontrol_araligi} onChange={(e) => handleKontrolAraligiChange(e, item.id)}/></td>
                 <td>{item.id}</td>
                 <td><button onClick={() => handleSubmit(item)}>Başlat</button></td>
@@ -206,8 +211,7 @@ function App() {
         </thead>
         <tbody>
           {x.map((item, index) => {
-            console.log(item)
-            item = {...item, baslangic_fiyati: null, min_fiyat: null, kontrol_araligi: null}
+            //item = {...item, baslangic_fiyati: null, minimum_fiyat: null, kontrol_araligi: null}
             return (
               <tr key={item.id}>
                 <td>{index+1}</td>
@@ -215,9 +219,9 @@ function App() {
                 <td>x{item.count}</td>
                 <td>{item.asset_id}</td>
                 <td>{item.steam_item.suggested_price}</td>
-                <td>{item.minimum_fiyat}</td>
+                <td>{item.min_fiyat} - {item.price}</td>
                 <td><input type="number" name="name" value={item.baslangic_fiyati} onChange={(e) => handleBaslangicFiyatChange(e, item.id)}/></td>
-                <td><input type="number" name="name"  value={item.min_fiyat} onChange={(e) => handleMinFiyatChange(e, item.id)}/></td>
+                <td><input type="number" name="name"  value={item.minimum_fiyat} onChange={(e) => handleMinFiyatChange(e, item.id)}/></td>
                 <td><input type="number" name="name"  value={item.kontrol_araligi} onChange={(e) => handleKontrolAraligiChange(e, item.id)}/></td>
                 <td>{item.id}</td>
                 <td><button onClick={() => handleSubmit(item)}>Başlat</button></td>
