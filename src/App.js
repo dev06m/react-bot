@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SearchBar from './components/SearchBar';
 import { showInvenory } from './invenory_methods';
 import ItemList from './components/ItemList';
 import Button from 'react-bootstrap/Button';
 import { makeStyles, Paper, Typography } from '@material-ui/core';
+import { css } from "@emotion/react";
+import { RingLoader } from "react-spinners";
 
 import { 
   fetchSellingItems, 
@@ -49,7 +51,12 @@ function App() {
   const [sayi, setSayi] = useState(0);
   const classes = useStyles();
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    // İstekleri burada yap
+    // İstek tamamlandığında setLoading(false) ile durumu güncelle
+}, []);
 
   const fetchInventory = async () => {
     var all_items =  await GetInventoryItems();
@@ -99,9 +106,6 @@ function App() {
     // }
     if (result)
       console.log(result)
-    // setInterval(() => {
-    //     hile(item);
-    // }, item.kontrol_araligi)
   }
 
 
@@ -143,6 +147,8 @@ function App() {
 
   return (
     <div>
+        <RingLoader color={"#123abc"} loading={loading} css={override} size={150} />
+
        <Button variant="primary" size="lg" class="me-2" onClick={fetchInventory}>
         Envanteri aç
       </Button>
@@ -233,5 +239,11 @@ function App() {
     </div>
   );
 }
+
+const override = css`
+    display: block;
+    margin: 0 auto;
+`;
+
 
 export default App;

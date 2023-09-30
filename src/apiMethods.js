@@ -49,25 +49,47 @@ export const FirstPriceSet = async (item, baslangic_fiyati, minimum_fiyat, bir_s
 
 export const min_fiyat_getir = async (itemName) =>
 {
-    try {
-        const response = await axios.get('https://api.shadowpay.com/api/v2/user/items/prices?token=' + token, {
+        return await axios.get('https://api.shadowpay.com/api/v2/user/items/prices?token=' + token, {
             params: {
                 search: itemName
             }
-        });
-        return response.data.data.find(item => item.steam_market_hash_name == itemName).price;
-    }catch (error){
-        console.log(error);
-    }
+        }).then(response => {
+            console.log(response.data.data.find(item => item.steam_market_hash_name == itemName).price)
+            return response.data.data.find(item => item.steam_market_hash_name == itemName).price;
+        }).catch(error => {
+            console.log(error)
+        })
+}
 
-
+export const min_fiyat_getir_envanter = async () =>
+{
+        return await axios.get('https://api.shadowpay.com/api/v2/user/items/prices?token=' + token)
+            .then(response => {
+                console.log(response.data.data)
+                return response.data.data;
+            }).catch(error => {
+                console.log(error)
+            })
 }
 
 export const MakeOffer = async (itemm, price, miliseconds) => { // update yaparken
 
-    const item = [{id:'31084109034', price: 40, project: 'csgo', currency: 'USD'}] // update yaptigimiz icin id olmasi lazim (item id si)
+    const item = [{id: itemm.asset_id, price: price, project: 'csgo', currency: 'USD'}] // update yaptigimiz icin id olmasi lazim (item id si)
         
     const response = await axios.post('https://api.shadowpay.com/api/v2/user/offers?token=' + token, 
+    {
+        offers: item 
+    });
+
+    return response;
+
+}
+
+export const UpdateOffer = async (itemm, price, miliseconds) => { // update yaparken
+    debugger
+    const item = [{id: itemm.id, price: price, currency: 'USD'}] // update yaptigimiz icin id olmasi lazim (item id si)
+        
+    const response = await axios.patch('https://api.shadowpay.com/api/v2/user/offers?token=' + token, 
     {
         offers: item 
     });
@@ -79,6 +101,7 @@ export const MakeOffer = async (itemm, price, miliseconds) => { // update yapark
 export const SatistakiItemFiyatiGetir = async (itemName) =>
   {
     var satistakiItemler = await GetItemsOnOffers();
+    console.log(satistakiItemler)
     var itemObject = null;
     if(satistakiItemler.length > 0)
         itemObject =  satistakiItemler.find(item => item.steam_item.steam_market_hash_name === itemName);
@@ -90,9 +113,11 @@ export const SatistakiItemFiyatiGetir = async (itemName) =>
   
 export const GetItemsOnOffers = async () =>
   {
-    const response = await axios.get('https://api.shadowpay.com/api/v2/user/offers?token=' + token);
+    return await axios.get('https://api.shadowpay.com/api/v2/user/offers?token=' + token)
+    .then(response => {
+        return response.data.data;
+    });
     
-    return response.data.data;
 }
 
 export const GetAllInventoryItems = async () => {
@@ -103,27 +128,31 @@ export const GetAllInventoryItems = async () => {
   
 
 export const GetInventoryItems = async () => {
-    const inventory_response = await axios.get('https://api.shadowpay.com/api/v2/user/inventory?token=' + token);
-    const offers_response = await axios.get('https://api.shadowpay.com/api/v2/user/offers?token=' + token);
     const item_names = [];
     const inventory_array = [];
     const offers_array = [];
-    let final_array = [];
-    
-    inventory_response.data.data.map(async(item) => {
-        //debugger
-        if (!item_names.includes(item.steam_market_hash_name) && item.tradable == true) {
-            // const min_fiyat = await min_fiyat_getir(item.steam_market_hash_name)
-            // item = {...item, min_fiyat: min_fiyat}
-            inventory_array.push({...item, count: 1})
-            item_names.push(item.steam_market_hash_name)
-        }else {
-            inventory_array.map(x => x.steam_market_hash_name === item.steam_market_hash_name ? x.count++ : x.count)
-        }
+    const final_array = [];
+    await axios.get('https://api.shadowpay.com/api/v2/user/inventory?token=' + token)
+    .then(response => {
+        response.data.data.map(async(item) => {
+            //debugger
+            if (!item_names.includes(item.steam_market_hash_name) && item.tradable == true) {
+                // const min_fiyat = await min_fiyat_getir(item.steam_market_hash_name)
+                // item = {...item, min_fiyat: min_fiyat}
+                inventory_array.push({...item, count: 1})
+                item_names.push(item.steam_market_hash_name)
+            }else {
+                inventory_array.map(x => x.steam_market_hash_name === item.steam_market_hash_name ? x.count++ : x.count)
+            }
+        });
     });
-    offers_response.data.data.map(item => {
-        offers_array.push(item);
-    })
+    await axios.get('https://api.shadowpay.com/api/v2/user/offers?token=' + token)
+    .then(response => {
+        response.data.data.map(item => {
+            offers_array.push(item);
+        })
+    });
+    
     //final_array = {first: inventory_array, second: offers_array}
     final_array.push(inventory_array);
     final_array.push(offers_array);
@@ -132,7 +161,6 @@ export const GetInventoryItems = async () => {
 }
 
 export const fetchItemById = async (asset_id) => {
-    debugger
     const response = await GetItemsOnOffers(asset_id);
     
     return response.find(item => item.asset_id === asset_id);
