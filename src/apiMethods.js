@@ -144,14 +144,14 @@ export const GetInventoryItems = async () => {
             }else {
                 inventory_array.map(x => x.steam_market_hash_name === item.steam_market_hash_name ? x.count++ : x.count)
             }
-        });
-    });
+        })
+    }).catch(e => console.log(e));
     await axios.get('https://api.shadowpay.com/api/v2/user/offers?token=' + token)
     .then(response => {
         response.data.data.map(item => {
             offers_array.push(item);
         })
-    });
+    }).catch(e => console.log(e));
     
     //final_array = {first: inventory_array, second: offers_array}
     final_array.push(inventory_array);
