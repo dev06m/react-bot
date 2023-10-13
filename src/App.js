@@ -105,23 +105,23 @@ function App() {
     let dongu = true;
     const item_data = data.find(x => x.id === item.id);
     if (item_data) {
-      item.baslangic_fiyati = item_data.baslangic_fiyati; 
+      item.baslangic_fiyati = item_data.baslangic_fiyati != undefined ? item_data.baslangic_fiyati : item.suggested_price; 
       item.minimum_fiyat = item_data.minimum_fiyat;
       item.kontrol_araligi = item_data.kontrol_araligi;  
     }
   
     let result;
       setInterval(async () => { // 100 kez kontrol edildi 1 dk bekleme buraya yapilabilir
-        debugger
+        
         console.log(`${item.steam_market_hash_name} için task başlıyor.`)
         result = await FiyatDegisikligiCheck(item);
         
         if(result) {
-          debugger
+          
           await hile(item)
         }
 
-      }, 2000)
+      }, 4000)
     // }
     if (result)
       console.log(result)

@@ -16,16 +16,17 @@ import { token } from './consts/Isimlendirmeler';
 //   };
   
 export const fetchSellingItems = async () => {
-    const response = await axios.get('https://api.shadowpay.com/api/v2/user/offers?token=' + token);
-
-    return response.data.data;
+    return await axios.get('https://api.shadowpay.com/api/v2/user/offers?token=' + token)
+        .then(response => {
+            return response.data.data;
+        }).catch(error => console.log(error))
 }
 
 export const fetchItems = async () => {
-    const response = await axios.get('https://api.shadowpay.com/api/v2/user/items?token=' + token, 
-);
-
-return response.data.data;
+    return await axios.get('https://api.shadowpay.com/api/v2/user/items?token=' + token)
+    .then(response => {
+        return response.data.data;
+    }).catch(error => console.log(error))
 }
 
 
@@ -38,13 +39,13 @@ export const FirstPriceSet = async (item, baslangic_fiyati, minimum_fiyat, bir_s
         return "E";
     }
     const offer_item = {id: item.asset_id.toString(), price: baslangic_fiyati, project: 'csgo', currency: 'USD'}
-    
-    const response = await axios.post('https://api.shadowpay.com/api/v2/user/offers?token=' + token, 
+    console.log(offer_item)
+    return await axios.post('https://api.shadowpay.com/api/v2/user/offers?token=' + token, 
     {
         offers: [offer_item]
-    });
-
-    return response;
+    }).then(res => {
+        return res;
+    }).catch(error => console.log(error))
 }  
 
 export const min_fiyat_getir = async (itemName) =>
@@ -76,26 +77,24 @@ export const MakeOffer = async (itemm, price, miliseconds) => { // update yapark
 
     const item = [{id: itemm.asset_id, price: price, project: 'csgo', currency: 'USD'}] // update yaptigimiz icin id olmasi lazim (item id si)
         
-    const response = await axios.post('https://api.shadowpay.com/api/v2/user/offers?token=' + token, 
+    return await axios.post('https://api.shadowpay.com/api/v2/user/offers?token=' + token, 
     {
         offers: item 
-    });
-
-    return response;
-
+    }).then(res => {
+        return res;
+    }).catch(error => console.log(error))
 }
 
 export const UpdateOffer = async (itemm, price, miliseconds) => { // update yaparken
-    debugger
+    
     const item = [{id: itemm.id, price: price, currency: 'USD'}] // update yaptigimiz icin id olmasi lazim (item id si)
         
-    const response = await axios.patch('https://api.shadowpay.com/api/v2/user/offers?token=' + token, 
+    return await axios.patch('https://api.shadowpay.com/api/v2/user/offers?token=' + token, 
     {
         offers: item 
-    });
-
-    return response;
-
+    }).then(res => {
+        return res
+    }).catch(error => console.log(error))
 }
 
 export const SatistakiItemFiyatiGetir = async (itemName) =>
@@ -116,7 +115,7 @@ export const GetItemsOnOffers = async () =>
     return await axios.get('https://api.shadowpay.com/api/v2/user/offers?token=' + token)
     .then(response => {
         return response.data.data;
-    });
+    }).catch(error => console.log(error));
     
 }
 
@@ -135,7 +134,7 @@ export const GetInventoryItems = async () => {
     await axios.get('https://api.shadowpay.com/api/v2/user/inventory?token=' + token)
     .then(response => {
         response.data.data.map(async(item) => {
-            //debugger
+            //
             if (!item_names.includes(item.steam_market_hash_name) && item.tradable == true) {
                 // const min_fiyat = await min_fiyat_getir(item.steam_market_hash_name)
                 // item = {...item, min_fiyat: min_fiyat}

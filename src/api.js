@@ -14,6 +14,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 export const hile = async (item, thread) => {
     const temp_item = item;
+    console.log(item)
     // burda bu item fiyati degistigi taktirde guncel fiyati alabilmek icin gerekli ama gerekli olmayabilir
     let satistaki_item = await fetchItemById(item.asset_id); 
     if (satistaki_item != null)
@@ -24,7 +25,7 @@ export const hile = async (item, thread) => {
     var fiyat_kontrol_dongusu = false;
     var getIdCount = 0;
     var result = null;
-    debugger
+    
     result = await GetItemsOnOffers();
     // item satista mi?
     var myItem = result != null ? result.find(x => x.asset_id === item.asset_id) : null;
@@ -33,6 +34,7 @@ export const hile = async (item, thread) => {
     { // ILK BASTA FIYAT SETLEME 
         console.log(`${item.steam_market_hash_name} ilk kez satışa konuyor.`);
         var ilk_setleme_sonuc = await FirstPriceSet(item, item.baslangic_fiyati, item.minimum_fiyat, item.asset_id);
+        console.log(ilk_setleme_sonuc);
         if (ilk_setleme_sonuc.status == 'success')
             console.log(`${item.steam_market_hash_name} ilk fiyat için setleme başarılı.`);
         else
@@ -66,14 +68,14 @@ export const hile = async (item, thread) => {
 
             var newPrice = varLowestPrice - 0.01;
             var newPricevar = newPrice.toString();
-            debugger
+            
             if (newPrice < altLimit)
             {
                 item.alt_limit++;
                 //console.log($"Alt limite takıldı, 1 dk bekleme başladı__{itemName}__\n");
                 //Thread.Sleep(60000);
                 //console.log($"1 dk bekleme bitt, başlangıc fiyatına setlenecek __{itemName}__\n ");
-                var result_ = MakeOffer(item, item.baslangic_fiyati.Tovar(), miliseconds);
+                var result_ = MakeOffer(item, item.baslangic_fiyati, miliseconds);
                 return false;
             }
             if ((myItemPrice < varLowestPrice || myItemPrice == 0)) 
@@ -82,6 +84,7 @@ export const hile = async (item, thread) => {
                 return false;
             }
             var result = await UpdateOffer(item, newPricevar, miliseconds);
+            console.log(result)
             if(result.status == 'success') {
                 console.log(`İtem ilk sıraya geçti. Fiyat: ${newPricevar}, Eski fiyat: ${varLowestPrice}. Item: ${item.steam_item.steam_market_hash_name}`);
                 return true;
@@ -94,7 +97,7 @@ export const hile = async (item, thread) => {
 
 
 export const FiyatDegisikligiCheck = async (item) =>
-{   debugger
+{   
     const item_name = item.steam_market_hash_name ? item.steam_market_hash_name : item.steam_item.steam_market_hash_name;
     const item_suggested = item.suggested_price ? item.suggested_price : item.steam_item.suggested_price;
     console.log(`${item_name} için fiyat kontrolü yapılıyor.`)
