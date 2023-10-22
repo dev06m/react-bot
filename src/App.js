@@ -10,6 +10,7 @@ import { css } from "@emotion/react";
 import { RingLoader } from "react-spinners";
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
+import BildirimPopup from './components/BildirimPopup';
 import Table from 'react-bootstrap/Table';
 import { blueGrey } from '@mui/material/colors';
 
@@ -67,12 +68,22 @@ function App() {
     console.log(item_prices)
     for (let index = 0; index < all_items[0].length; index++) {
       //const min_fiyat = await min_fiyat_getir(all_items[0][index].steam_market_hash_name);
-      const min_fiyat = item_prices.find(item => item.steam_market_hash_name === all_items[0][index].steam_market_hash_name)?.price;
+      const min_fiyat = item_prices?.find(item => item.steam_market_hash_name === all_items[0][index].steam_market_hash_name)?.price;
       all_items[0][index] = {...all_items[0][index], min_fiyat: min_fiyat ? min_fiyat : '-'}
+    }
+    for (let index = 0; index < all_items[1].length; index++) {
+      //const min_fiyat =  min_fiyat_getir(all_items[1][index].steam_item.steam_market_hash_name);
+      const min_fiyat = item_prices?.find(item => item.steam_market_hash_name === all_items[1][index].steam_item.steam_market_hash_name).price;
+      all_items[1][index] = {...all_items[1][index], min_fiyat: min_fiyat ? min_fiyat : '-'}
     }
 
     setisLoading(false);
     setItems(all_items[0]);
+    setX(all_items[1]);
+    <BildirimPopup/>
+    setInterval(async () => {
+      await satistaki_itemler();
+    }, 10000)
 }, []);
 
   const fetchInventory = async () => {
@@ -93,6 +104,7 @@ function App() {
     setisLoading(false);
     setItems(all_items[0]);
     setX(all_items[1])
+
   }
   
   const deneme =  () => {
@@ -103,7 +115,7 @@ function App() {
  
   const handleSubmit = async (item) => {
     let dongu = true;
-    const item_data = data.find(x => x.id === item.id);
+    const item_data = data?.find(x => x.id === item.id);
     if (item_data) {
       item.baslangic_fiyati = item_data.baslangic_fiyati != undefined ? item_data.baslangic_fiyati : item.suggested_price; 
       item.minimum_fiyat = item_data.minimum_fiyat;
@@ -111,17 +123,17 @@ function App() {
     }
   
     let result;
-      setInterval(async () => { // 100 kez kontrol edildi 1 dk bekleme buraya yapilabilir
+    setInterval(async () => { // 100 kez kontrol edildi 1 dk bekleme buraya yapilabilir
+      
+      console.log(`${item.steam_market_hash_name} için task başlıyor.`)
+      result = await FiyatDegisikligiCheck(item);
+      
+      if(result) {
         
-        console.log(`${item.steam_market_hash_name} için task başlıyor.`)
-        result = await FiyatDegisikligiCheck(item);
-        
-        if(result) {
-          
-          await hile(item)
-        }
+        await hile(item)
+      }
 
-      }, 4000)
+    }, 4000)
     // }
     if (result)
       console.log(result)
@@ -163,6 +175,20 @@ function App() {
     })
     }
   };
+
+  const satistaki_itemler = async () => {
+    //setisLoading(true);
+    var all_items =  await GetInventoryItems();
+    var item_prices = await min_fiyat_getir_envanter();
+    for (let index = 0; index < all_items[1].length; index++) {
+      //const min_fiyat =  min_fiyat_getir(all_items[1][index].steam_item.steam_market_hash_name);
+      const min_fiyat = item_prices?.find(item => item.steam_market_hash_name === all_items[1][index].steam_item.steam_market_hash_name).price;
+      all_items[1][index] = {...all_items[1][index], min_fiyat: min_fiyat ? min_fiyat : '-'}
+    }
+
+    //setisLoading(false);
+    setX(all_items[1])
+  }
 
   return (
     <div>
@@ -221,8 +247,8 @@ function App() {
           </Table>
 
           <Paper className={classes.root}>
-            <Typography variant="h4" className={classes.text}>
-              Satıştaki İtemler
+            <Typography variant="h4" className={classes.text} onClick={satistaki_itemler}>
+              <a>Satıştaki İtemler</a>
             </Typography>
           </Paper>
           <Table striped bordered hover>
@@ -251,7 +277,7 @@ function App() {
                     <td>x{item.count}</td>
                     <td>{item.asset_id}</td>
                     <td>{item.steam_item.suggested_price}</td>
-                    <td>{item.min_fiyat} - {item.price}</td>
+                    <td style={{backgroundColor: (item.min_fiyat == item.price || item.min_fiyat > item.price) ? '#B7F376' : '#F14E62', color: 'white', transition: 'background-color 0.7s ease'}}>{item.min_fiyat} - {item.price}</td>
                     <td><input style={{width: '100px'}} type="number" name="name" value={item.baslangic_fiyati} onChange={(e) => handleBaslangicFiyatChange(e, item.id)}/></td>
                     <td><input style={{width: '100px'}} type="number" name="name"  value={item.minimum_fiyat} onChange={(e) => handleMinFiyatChange(e, item.id)}/></td>
                     <td><input style={{width: '100px'}} type="number" name="name"  value={item.kontrol_araligi} onChange={(e) => handleKontrolAraligiChange(e, item.id)}/></td>

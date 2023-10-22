@@ -28,14 +28,14 @@ export const hile = async (item, thread) => {
     
     result = await GetItemsOnOffers();
     // item satista mi?
-    var myItem = result != null ? result.find(x => x.asset_id === item.asset_id) : null;
+    var myItem = result != null ? result?.find(x => x.asset_id === item.asset_id) : null;
     var itemPrice = 0;
     if (myItem == null)
     { // ILK BASTA FIYAT SETLEME 
         console.log(`${item.steam_market_hash_name} ilk kez satışa konuyor.`);
         var ilk_setleme_sonuc = await FirstPriceSet(item, item.baslangic_fiyati, item.minimum_fiyat, item.asset_id);
         console.log(ilk_setleme_sonuc);
-        if (ilk_setleme_sonuc.status == 'success')
+        if (ilk_setleme_sonuc?.status == 'success')
             console.log(`${item.steam_market_hash_name} ilk fiyat için setleme başarılı.`);
         else
             console.log(`${item.steam_market_hash_name} ilk fiyat için setleme başarısız.`);
@@ -85,7 +85,7 @@ export const hile = async (item, thread) => {
             }
             var result = await UpdateOffer(item, newPricevar, miliseconds);
             console.log(result)
-            if(result.status == 'success') {
+            if(result?.status == 'success') {
                 console.log(`İtem ilk sıraya geçti. Fiyat: ${newPricevar}, Eski fiyat: ${varLowestPrice}. Item: ${item.steam_item.steam_market_hash_name}`);
                 return true;
             };
